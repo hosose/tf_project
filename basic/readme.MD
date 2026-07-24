@@ -57,5 +57,36 @@ No changes. Your infrastructure matches the configuration.
 Terraform has compared your real infrastructure against your configuration and found no differences, so no changes are needed.
 
 Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+---
+실제 : ec2 경우 1~2분, 쿠버네티스 등 10분 이내 등등
+```
+
+- step 5 : 인프라 삭제 (destroy)
+```
+terraform destroy
+--- (삭제된 것 없음, 만든 것이 없어서)
+No changes. No objects need to be destroyed.
+
+Either you have not created any objects yet or the existing objects were already deleted outside of Terraform.
+
+Destroy complete! Resources: 0 destroyed.
 ```
 ## EC2 구성
+### 최종 형태
+```
+Internet
+     │
+Elastic IP          <- 리소스 생성 후 주소 확인용으로 사용
+     │
+┌──────────────┐
+│     EC2      │
+│ AmazonLinux2 │    <- 아마존 리눅스 사용/ec2-user
+└──────────────┘
+     │
+Security Group      <- 보안그룹 전용 생성/0.0.0.0/0 개방/인바운드(ssh-22), 아웃바운드(전체)
+     │
+VPC(Default)        <- 기본 VPC 사용, 별도 생성 x 
+
+---
+pem 파일, 스토리지, 리전, 이름, ... 
+```
