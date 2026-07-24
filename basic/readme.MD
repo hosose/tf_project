@@ -19,4 +19,14 @@ terraform.tfvars
 .gitignore
 ```
 
+- provider.tf 작성
+
+- 인프라구성 step1 : 테라폼 초기화 (init)
+```powershell
+terraform init
+---
+성공 후 결과물
+-> .terraform
+-> .terraform.lock.hcl : 프로바이더의 모듈의 정확한 버전, 해시값 잠금 -> 안정성, 자동생성 시 체킹 파일
+```
 ## EC2 구성
