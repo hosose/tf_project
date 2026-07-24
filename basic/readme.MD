@@ -90,3 +90,14 @@ VPC(Default)        <- 기본 VPC 사용, 별도 생성 x
 ---
 pem 파일, 스토리지, 리전, 이름, ... 
 ```
+
+### 세부 구성
+- variables.tf
+    - 리전, 인스턴스 유형, 키이름 설정
+    - provider.tf 변수 사용
+    - 문법 검사
+        ```
+            terraform validate
+            ---
+            Success! The configuration is valid.
+        ```
