@@ -185,3 +185,43 @@ pem 파일, 스토리지, 리전, 이름, ...
                ...
           ```
           - data.aws_ami.amazon_linux 정보를 출력하여 전체 정보 확인 가능
+
+     - EC2 생성 선언
+          - 재료(vpc, subnets, 보안그룹, ami, 인스턴스유형(직접지정), pem파일 ) 전부 이용하여 구성
+          - plan
+          ```
+               symbols:
+               + create
+
+               Terraform will perform the following actions:
+
+               # aws_instance.DE-AI-25-IaC-TF will be created
+               + resource "aws_instance" "DE-AI-25-IaC-TF" {
+                    + ami                                  = "ami-0f93dc65265863858"
+                    + arn                                  = (known after apply) <- 생성된 후에 확인가능
+               
+               ...
+               Plan: 2 to add, 0 to change, 0 to destroy. <- 보안그룹, EC2 생성등 2개 리소스 생성으로 확정
+          ```
+          - apply
+          ```
+               ...
+               aws_security_group.DE-AI-25-IaC-TF-GROUP: Creating...
+               aws_security_group.DE-AI-25-IaC-TF-GROUP: Creation complete after 3s [id=sg-0e9ec5a5dca9c8f29]
+               aws_instance.DE-AI-25-IaC-TF: Creating...
+               aws_instance.DE-AI-25-IaC-TF: Still creating... [00m10s elapsed]
+               aws_instance.DE-AI-25-IaC-TF: Creation complete after 12s [id=i-08491f3c0f269a12e]
+
+               Apply complete! Resources: 2 added, 0 changed, 0 destroyed. <- 15초 소요
+
+               Outputs:
+               ... <- 현재 퍼블릭 IP 없음 (출력 처리 x)
+
+          ```
+          - destroy
+          ```
+               ...
+               aws_instance.DE-AI-25-IaC-TF: Destruction complete after 1m0s <- 1분 소요
+               ...
+               Destroy complete! Resources: 2 destroyed. <- 2개 리소스 삭제
+          ```
