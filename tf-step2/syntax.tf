@@ -42,3 +42,25 @@ output "books" {
 output "stations" {
   value = var.stations
 }
+
+
+######################################
+#tfvars 테스트
+######################################
+variable "environment" {
+  type        = string
+  default     = "dev"
+  description = "배포 환경 (dev -> stage -> prod)"
+}
+variable "instance_count" {
+  type        = number
+  default     = 1
+  description = "생성할 인스턴스 개수"
+}
+
+output "environment" {
+  value = var.environment
+}
+output "instance_count" {
+  value = var.instance_count
+}
