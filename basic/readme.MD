@@ -225,3 +225,26 @@ pem 파일, 스토리지, 리전, 이름, ...
                ...
                Destroy complete! Resources: 2 destroyed. <- 2개 리소스 삭제
           ```
+     - EIP 생성
+          ```
+          - apply
+               
+          ```
+          
+# basic 정리
+- 기본 VPC/서브넷 사용 => 전용 VPC 필요함(개선)
+- 보안그룹, ec2, eip => 동적 생성 연결
+- 선언 및 표현
+     - data         : 기존 aws 리소스 조회
+     - resource     : 새로운 aws 리소스 생성
+     - provider     : AWS 연결 설정, 버전등
+     - *.tf
+          - variable : 변수 정의 -> 설정값 분리 관리
+          - output   : 테라폼의 수행(생성) 결과 출력
+- 명령어
+     - terraform fmt          : tf 코드의 자동 정렬
+     - terraform validate     : 문법 검사
+     - terraform init         : 초기화, 최초 필요한 공간, 실행파일등 세팅 (*.exe,..)
+     - terraform plan         : apply 적용에 대한 계획 시뮬레이션 -> 검토
+     - terraform apply        : 리소스 생성
+     - terraform destroy      : 리소스 해제(삭제)

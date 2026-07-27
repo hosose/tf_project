@@ -24,3 +24,15 @@ output "aws_ami_amazon_linux_info" {
   value       = data.aws_ami.amazon_linux
   description = "아마존 리눅스 AMI 아이디 조회"
 }
+
+# 퍼블릭 IP 출력
+output "public_ip" {
+  value       = aws_eip.DE-AI-07-IaC-TF-EIP.public_ip
+  description = "EC2 퍼블릭 IP"
+}
+
+# EC2 인스턴스 ID 출력
+output "instance_id" {
+  value       = aws_instance.DE-AI-07-IaC-TF-EC2.id
+  description = "EC2 인스턴스 ID"
+}

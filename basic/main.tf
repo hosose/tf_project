@@ -112,3 +112,11 @@ resource "aws_instance" "DE-AI-07-IaC-TF-EC2" {
   }
   # IP는 임시로 자동 할당(현대 EIP 사용X)
 }
+
+# 5. Elastic IP 생성 및 EC2와 연결
+resource "aws_eip" "DE-AI-07-IaC-TF-EIP" {
+  # EC2 instance에 연결(생성이 완료된 리소스 참조)
+  instance = aws_instance.DE-AI-07-IaC-TF-EC2.id
+  # 네트워크
+  domain = "vpc"
+}
