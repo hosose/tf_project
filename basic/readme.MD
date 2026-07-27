@@ -92,6 +92,12 @@ pem 파일, 스토리지, 리전, 이름, ...
 ```
 
 ### 세부 구성
+- *.tf 파일은 1개만 구성해도 OK, n개(리소스별 등) 구성해도 OK
+- n개의 tf로 구성되도, 생성 순서에 따라 구동 흐름이 자동 조정됨(plan, graph 등 명령을 통해 확인 가능)
+
+- XXX.pem
+    - 계정별 인증키 생성>보관
+
 - variables.tf
     - 리전, 인스턴스 유형, 키이름 설정
     - provider.tf 변수 사용
@@ -101,3 +107,81 @@ pem 파일, 스토리지, 리전, 이름, ...
             ---
             Success! The configuration is valid.
         ```
+- provider.tf
+     - 구성에 필요한 패키지등 사용 버전
+     - 리전등
+
+
+- main.tf
+     - 구성
+          - 통합적으로 구성(VPC -> SUBNETS -> 보안그룹(동적생성) -> OS 이미지 조회/선택:AmazonLinux2 -> EC2 생성 선언 -> Elastic IP 생성 연결)
+          - 클라우드 내부에 나만 사용하는 사설네트워크(VPC관련 전체 리소스) 만 제외하고 전체 구성을 동적으로 생성
+     - data, resource등 작성
+          - 리소스 유형(https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+               - AWS VPC => aws_vpc
+               - AWS IAM Role => aws_iam_role
+               - <프로바이더명>_<서비스명> or <프로바이더명>_<서비스명>_<상세리소스>
+          - TF내부 고유명 : 커스텀 가능               
+          ```
+               data|resource "리소스유형(AWS 고정값)" "테라폼 내부 식별자(TF내부 고유명)" {
+                    ...
+               }
+          ```
+     - vpc 기본 제공
+          - VPC는 리전별로 기본이 하나씩 구성되어 있다 (없으면 생성 가능)
+               - 현재 ap-northeast-2(서울)의 기본 VPC는 서브넷 4개, 라우팅 테이블 1개, 인터넷게이트웨이 1개(서브넷 4개가 모두 연결되어 있음)으로 구성되어 있음 -> 어떤 서버넷을 사용하든 EC2는 외부에서 접속 가능한 구조임
+     - 보안 그룹 생성(resource)하도록 선언
+          - 작성(세부 설명은 코드에 삽입)
+          - 실행 테스트
+               ```
+               # 자동 정렬  => = 를  기준으로 좌우 정렬 진행(주석에 따라 처리 않될수 있음-> 외부나 뒤쪽으로 배치선호)
+               terraform fmt 
+               ---
+               main.tf
+               outputs.tf
+               provider.tf
+
+               # 유효성 검사
+               terraform validate
+               ---
+               Success! The configuration is valid.
+
+               # 플랜 => 이렇게 만들것이다
+               terraform plan
+               ---
+               ..
+               symbols:
+                    + create  <= + 생성
+               ...
+                    하위 모든 리소스 에서 + 형태로 확인됨
+               ... 
+               요약
+               Plan: 1 to add, 0 to change, 0 to destroy
+
+               # 적용
+               terraform apply
+
+               # aws 보안 그룹 확인 -> aws 대시보드
+
+               # 삭제
+               terraform destroy
+               ---
+                    - destroy : 삭제(제거) 처리 
+               ...
+                    하위 모든 리소스 에서 - 형태로 확인됨
+               ... 
+               요약
+               Plan: 0 to add, 0 to change, 1 to destroy.
+               ```
+     
+     - AMI(Amazon Machine Image) OS 이미지 조회
+          - 사전에 어떤 제품을 사용하겠다 선정함(아마존 리눅스)
+          - 목표 : ami-xxxx로 표기되는 이미지값 획득
+          ```
+          terrafomr apply
+          ---
+               ...
+               aws_ami_amazon_linux_id = "ami-0f93dc65265863858" <- 아이디 조회됨
+               ...
+          ```
+          - data.aws_ami.amazon_linux 정보를 출력하여 전체 정보 확인 가능
