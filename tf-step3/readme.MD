@@ -204,18 +204,18 @@ AWS
 ## 게이트웨이 포함 패킷 이동
 ```
 +-----------------------------------------------------------------------------------+
-| AWS Cloud (ap-northeast-2 : 서울 리전)                                              |
+| AWS Cloud (ap-northeast-2 : 서울 리전)                                             |
 |                                                                                   |
 |  [ VPC: 10.0.0.0/16 ] (가상 네트워크 )                                              |
 |                                                                                   |
 |   +---------------------------------------+ +----------------------------------+  |
 |   | Public Subnet (10.0.1.0/24)           | | Private Subnet (10.0.101.0/24)   |  |
-|   | (외부 공개 구역)                          | | (내부 보안 구역)                    |  |
+|   | (외부 공개 구역)                        | | (내부 보안 구역)                   |  |
 |   |                                       | |                                  |  |
 |   |  [ ALB / Bastion ]                    | |  [ EKS Worker Node / DB ]        |  |
 |   +---------------------------------------+ +----------------------------------+  |
 |                       |                                      |                    |
-|                       | (직접 연결)                            | (NAT 통해 출구만 연결) |
+|                       | (직접 연결)                           | (NAT 통해 출구만 연결)|
 |                       v                                      v                    |
 |             [ Internet Gateway ]                    [ NAT Gateway ]               |
 |                      |                                       |                    |
@@ -256,3 +256,183 @@ aws_vpc.DE-AI-07-company
 
 ## Route Table 연결
 - subnet과 igw를 연결
+
+## 실습
+### 목표
+    - basic에서 작성한 ec2 Iac 코드를 가져와서 vpc, 서브넷 포지션을 vpc.tf로 만들어진 내용으로 연결
+    - 테라폼으로 Custom VPC 사용하는 EC2 구성
+    - public subnet에 EC2 배치
+    - Security group 회사 VPC에 맞게 수정(22, 80)
+    - EIP X
+
+### 구성도
+```
+            Internet
+                │
+            Internet Gateway
+                │
+      ┌─────────────────────────┐
+      │      Company VPC        │
+      │     10.0.0.0/16         │
+      │                         │
+      │  Public Subnet          │
+      │   10.0.1.0/24           │
+      │        │                │
+      │     EC2 + EIP(x)        │
+      └─────────────────────────┘
+```
+```
+
+[ AWS Region: ap-northeast-2 (서울) ]
+────────────────────────────────────────────────────────────────────────────────────────────
+
+ 1️⃣ 새로 생성한 네트워크 (New VPC Environment)
+ ┌────────────────────────────────────────────────────────────────────────────────────────┐
+ │ aws_vpc.DE-AI-07-COMPANY (CIDR: 10.0.0.0/16)                                           │
+ │                                                                                        │
+ │  ┌──────────────────────────────────────────────┐       ┌───────────────────────────┐  │
+ │  │ aws_subnet.public                            │       │ aws_internet_gateway      │  │
+ │  │ (CIDR: 10.0.1.0/24, AZ: ap-northeast-2a)     │       │ .company                  │  │
+ │  │                                              │       └─────────────┬─────────────┘  │
+ │  │                                              │                     │                │
+ │  └──────────────────────┬───────────────────────┘                     │                │
+ │                         │                                             │ (Internet)     │
+ │                         │ (연결/Association)                           │                │
+ │                         ▼                                             ▼                │
+ │  ┌──────────────────────────────────────────────────────────────────────────────────┐  │
+ │  │ aws_route_table.public                                                           │  │
+ │  │   └── Route: 0.0.0.0/0 ──────────────────────────────────────────────────────────┘  │
+ │  └──────────────────────────────────────────────────────────────────────────────────┘  │
+ └────────────────────────────────────────────────────────────────────────────────────────┘
+
+ 2️⃣ 기존 Default VPC 기반 EC2 및 보안/IP 설정 (EC2 Instance & Security)
+ ┌────────────────────────────────────────────────────────────────────────────────────────┐
+ │ data.aws_vpc.default (기존 Default VPC)                                                 │
+ │                                                                                        │
+ │  ┌───────────────────────────────────────┐                                             │
+ │  │ aws_security_group.DE-AI-07-IaC-TF-SG │                                             │
+ │  │   ├── Inbound: SSH (22), HTTP (80)    │                                             │
+ │  │   └── Outbound: All (0.0.0.0/0)       │                                             │
+ │  └───────────────────┬───────────────────┘                                             │
+ │                      │                                                                 │
+ │                      ▼ (적용)                                                           │
+ │  ┌──────────────────────────────────────────────────┐      ┌────────────────────────┐  │
+ │  │ aws_instance.DE-AI-07-IaC-TF-EC2                 │◄─────┤ aws_eip                │  │
+ │  │   ├── Type: t3.micro                             │(할당) │ .DE-AI-07-IaC-TF-EIP   │  │
+ │  │   ├── Key: de-ai-07-rsa                          │      └────────────────────────┘  │
+ │  │   ├── Subnet: subnet-049c8f72bb109a11e (Default) │                                  │
+ │  │   └── AMI: data.aws_ami.amazon_linux             │                                  │
+ │  └──────────────────────────────────────────────────┘                                  │
+ └────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 작업
+- VPC 교체 -> subnet 교체 -> 사용하느곳 모두 교체
+- basic 코드 붙여넣기 -> main.tf, variable.tf, provider.tf, outputs.tf
+- main.tf 에서 vpc, subnet 코드 삭제
+- terraform plan > error > 수정위치가 나옴
+```
+│ Error: Reference to undeclared resource
+│
+│   on main.tf line 9, in resource "aws_security_group" "DE-AI-25-IaC-TF-GROUP":
+│    9:   vpc_id = aws_vpc.DE-AI-25-company.id
+│
+│ A managed resource "aws_vpc" "DE-AI-25-company" has not been declared in the root module.
+╵
+╷
+│ Error: Reference to undeclared resource
+│
+│   on outputs.tf line 6, in output "default_vpc_id":
+│    6:   value       = data.aws_vpc.default.id
+│
+│ A data resource "aws_vpc" "default" has not been declared in the root module.
+╵
+╷
+│ Error: Reference to undeclared resource
+│
+│   on outputs.tf line 11, in output "default_subnets_ids":
+│   11:   value       = data.aws_subnets.default.ids
+│
+│ A data resource "aws_subnets" "default" has not been declared in the root module.
+╵
+╷
+│ Error: Reference to undeclared resource
+│
+│   on outputs.tf line 30, in output "public_ip":
+│   30:   value       = aws_eip.DE-AI-07-IaC-TF-EIP.public_ip
+│
+│ A managed resource "aws_eip" "DE-AI-07-IaC-TF-EIP" has not been declared in the root module.
+╵
+╷
+│ Error: Reference to undeclared resource
+│
+│   on outputs.tf line 36, in output "instance_id":
+│   36:   value       = aws_instance.DE-AI-07-IaC-TF-EC2.id
+│
+│ A managed resource "aws_instance" "DE-AI-07-IaC-TF-EC2" has not been declared in the root module.
+
+ Error: Reference to undeclared resource
+│
+│   on outputs.tf line 6, in output "default_vpc_id":
+│    6:   value       = data.aws_vpc.default.id
+│
+│ A data resource "aws_vpc" "default" has not been declared in the root module.
+╵
+╷
+│ Error: Reference to undeclared resource
+│
+│   on outputs.tf line 11, in output "default_subnets_ids":
+│   11:   value       = data.aws_subnets.default.ids
+│
+│ A data resource "aws_subnets" "default" has not been declared in the root module.
+╵
+╷
+│ Error: Reference to undeclared resource
+│
+│   on outputs.tf line 36, in output "instance_id":
+│   36:   value       = aws_instance.DE-AI-07-IaC-TF-EC2.id
+│
+│ A managed resource "aws_instance" "DE-AI-07-IaC-TF-EC2" has not been declared in the root module.
+```
+- 5. Elastic IP 생성 선언 주석 풀어줌
+- outputs.tf에서 EIP의 퍼블릭 IP 출력로 표기
+- terraform apply
+- terraform graph 
+    - 관계도 확인
+    ```
+        digraph G {
+            rankdir = "RL";
+            node [shape = rect, fontname = "sans-serif"];
+            "data.aws_ami.amazon_linux" [label="data.aws_ami.amazon_linux"];
+            "aws_eip.DE-AI-25-IaC-TF-EIP" [label="aws_eip.DE-AI-25-IaC-TF-EIP"];
+            "aws_instance.DE-AI-25-IaC-TF" [label="aws_instance.DE-AI-25-IaC-TF"];
+            ...
+    ```
+
+
+# 내일 목표시스템
+- private 서브넷 구성
+- 3-tier 구성
+- NAT Gateway 배치
+```
+                    Internet
+                        │
+                Internet Gateway
+                        │
+                Public Route Table
+                        │
+      ┌─────────────────┴─────────────────┐
+      │                                   │
+ Public Subnet (10.0.1.0/24)        Private Subnet (10.0.2.0/24)
+      │                                   │
+      │                                   │
+ ┌────────────┐                    ┌────────────┐
+ │ Web EC2    │                    │ DB EC2     │
+ │ nginx      │                    │ mysql      │
+ └────────────┘                    └────────────┘
+                                          │
+                                    ┌────────────┐
+                                    │ WAS EC2    │
+                                    │ FastAPI    │
+                                    └────────────┘
+```

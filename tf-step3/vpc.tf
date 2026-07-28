@@ -44,3 +44,9 @@ resource "aws_route_table" "public" {
     Name = "DE-AI-07-COMPANY-public-rt"
   }
 }
+
+# 최종연결 (공개용 서브넷 -> 공개용 라우트테이블)
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
