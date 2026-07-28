@@ -89,10 +89,18 @@
         ```
     - 종류
         - 퍼블릭 서브넷
+            - 외부 인터넷과 직접 통신이 가능한 구역
+            - 인터넷 게이트웨이로 향하는 라우트 경로가 존재
+            - 외부에서 접속 가능한 퍼블릭 IP 가짐([*]web <-> was <-> db)
+            - 배치 : web서버, ALB(로드밸런서), Bastion Host(private 서브넛 접속), ....
             ```
                 Internet <-> IGW <-> Route Table <-> Public Subnet <-> EC2                    
             ```
         - 프라이빗 서브넷
+            - 외부 인터넷 망과 격리되어 내부 통신만 가능한 안전한 구역
+            - 외부에서 이 구역으로 접속 불가(모두 차단)
+            - 단 NAT 게이트웨이를 통해서 외부로 나가는 통신 가능(Pull)
+            - 배치 : EKS 워커노드(worker node), DB(RDS, 직접설치), 백엔드 서버(was)
             ```
                 Internet                       X  Route Table <-> Public Subnet <-> EC2
                 Internet  <-(pull) NAT Gateway <-> Route Table <-> Public Subnet <-> EC2
