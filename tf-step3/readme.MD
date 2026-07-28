@@ -228,3 +228,31 @@ AWS
 # 테라폼을 이용한 Custom VPC 구성, company-vpc
 ## VPC 구성
 - ~/tf-step3/vpc.tf 생성
+    - 작성
+    - terraform init
+    - terraform plan
+    - terraform apply
+
+## 서브넷 구성 (public)
+- 작성
+```
+terraform apply
+---
+..
+---
+terraform state list
+---
+aws_subnet.public
+aws_vpc.DE-AI-07-company
+```
+
+## Internet Gateway 
+- 작성
+- 생성
+- 확인
+
+## Route Table
+- Route Table 생성
+
+## Route Table 연결
+- subnet과 igw를 연결
