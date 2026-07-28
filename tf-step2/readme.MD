@@ -117,3 +117,53 @@ resource "..." "was"{
     # 확인
     terraform destroy
 ```
+
+# Dynamic (반복)
+- 중첩 블록을 반복하여 생성하는 문법
+- 대상 : 블록 -> 블록이 n개 생성
+- 사용 : resource 내부
+- ex)
+    - 보안 그룹에서 ingress 여러 포트를 오픈할 때 유용
+    - 실제 구성은 web-was-db의 보안 그룹을 각각 구성할 때 진행
+```
+resource "aws_security_group" "DE-AI-25-IaC-TF-GROUP" {
+  ...
+  # 포트만 다르고, 나머지 구성은 동일 => 패턴은 동일하되, 값이 동일/다르거나의 반복
+  ingress {
+    protocol    = "tcp"
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    protocol    = "tcp"
+    from_port   = 443
+    to_port     = 443
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ...
+}
+# 다이나믹 적용
+locals = {
+    ports = [22, 443, 80]
+}
+resource "aws_security_group" "DE-AI-25-IaC-TF-GROUP" {
+    dynamic "ingress" {
+        for_each = locals.ports # 3회 반복임을 인지함(선언)
+        content {
+            protocol    = "tcp"         # 고정
+            cidr_blocks = ["0.0.0.0/0"] # 고정
+            # dynamic "ingress" 이렇게 선언 햇으므로 값은 ingress.value로 사용
+            from_port   = ingress.value # for_each에 설정된 값을 순서대로 접근 (22->443->80)
+            to_port     = ingress.value
+            
+        }
+    }
+}
+```

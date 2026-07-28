@@ -50,7 +50,8 @@ resource "aws_security_group" "DE-AI-07-IaC-TF-SG" {
     # 10.0.0.0/8 => 맨 앞에 1자리는 고정 => 10은 고정 나머지 3자리에서 모두 가능 => 256*256*256 주소 가능함
     # 0.0.0.0/0 => Anywhere IPV4 (전 세계 어디서든 접근 가능 -> 보안에 취약)
     # 222.108.125.33/32 => 오직 이 IP만 접속 가능함! ~/32 (4자리 모두 고정)
-    cidr_blocks = ["222.108.125.33/32"]
+    # 웹 브라우저 접속시 전부 개방
+    cidr_blocks = ["0.0.0.0/0"]
     description = "SSH"
   }
   ingress {
@@ -111,6 +112,15 @@ resource "aws_instance" "DE-AI-07-IaC-TF-EC2" {
     Name = "DE-AI-07-ap2-IaC-TF-EC2"
   }
   # IP는 임시로 자동 할당(현대 EIP 사용X)
+  # AMI에서 아마존리눅스 최신버전 획득 => 웹 연결 브라우저 접속 기능 설치 안되어있음
+  # 인스턴스 만들 때 직접 설치 (user_data)
+  # #!/bin/bash : bash 쉘을 이용하여 아래 명령을 실행하라 (안내표시 shebang)
+  # 아마존 리눅스(레드헷 계열 커스텀) -> dnf : 패키지 관리자 (소프트웨어 설치,삭제 ...)
+  # <<-EOF ... EOF : 여러줄 문자열을 한번에 스크립트나 파일로 넘겨주는 형식(Here-Document)
+  user_data = <<-EOF
+  #!/bin/bash
+  dnf install -y ec2-instance-connect
+  EOF
 }
 
 # 5. Elastic IP 생성 및 EC2와 연결
