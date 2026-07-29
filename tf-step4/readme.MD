@@ -18,7 +18,7 @@
                                           │
                                     ┌────────────┐
                                     │ DB EC2     │
-                                    │ MySQL      │
+                                    │ mysql      │
                                     └────────────┘
                                           
 ```  
@@ -51,17 +51,28 @@ L VPC
 
 # 보안 그룹 구성
 - sg.tf 생성
-- ingress part 반복 구성
-    - EC2 (Web)
+- ingress 파트가 반복됨
+    - EC2 (Web) 
         ```
-            # ingress 3회 반복 -> locals에서 값 정의(상수), for_each(반복 데이터 주입), dynamic을 통해 블록 반복 표현
-            ingress{ # 22번 SSH
-                
+            # ingress 3회반복 -> locals에서 값 정의(상수), for_each(반복데이터주입), dynamic을 통해 블록반복표현
+            ingress {
+              ..  22  ..
             }
-            ingress{ # 80번 HTTP
-                
+            ingress {
+              ..  80  ..
             }
-            ingress{ # 443번 HTTPS
-                
+            ingress {
+              ..  443  ..
             }
         ```
+- 작성
+    - terraform fmt
+    - terraform validate
+    - terraform plan
+        - 의도한 대로 네이밍, 리소스 구성등 잘 계획되었는지 확인
+
+- web -> was, was는 오직 web에서만 tcp 8000 포트로만 오픈된다. rule 구성
+    - 대시보드 > 해당 보안그룹 > 인바운드 > 8000 포트의 소스 탭 > 접근 가능한 보안 그룹(WEB)이 명시, cidr x
+
+- was -> db,  db는 오직 was에서만 tcp 3306 포트로만 오픈된다. rule 구성
+    - 대시보드 > 해당 보안그룹 > 인바운드 > 3306 포트의 소스 탭 > 접근 가능한 보안 그룹(WAS)이 명시, cidr xterr
