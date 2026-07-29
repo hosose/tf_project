@@ -423,16 +423,17 @@ aws_vpc.DE-AI-07-company
                         │
       ┌─────────────────┴─────────────────┐
       │                                   │
- Public Subnet (10.0.1.0/24)        Private Subnet (10.0.2.0/24)
+ Public Subnet (10.0.1.0/24)        Private Subnet (10.0.2.0/24) <- ssm Manager 방식
       │                                   │
       │                                   │
  ┌────────────┐                    ┌────────────┐
  │ Web EC2    │                    │ DB EC2     │
- │ nginx      │                    │ mysql      │
+ │ nginx      │     -(SSH)->       │ mysql      │
  └────────────┘                    └────────────┘
                                           │
                                     ┌────────────┐
                                     │ WAS EC2    │
                                     │ FastAPI    │
                                     └────────────┘
-```
+                                          
+```       
