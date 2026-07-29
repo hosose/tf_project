@@ -12,13 +12,13 @@
       │                                   │
       │                                   │
  ┌────────────┐                    ┌────────────┐
- │ Web EC2    │                    │ DB EC2     │
- │ nginx      │     -(SSH)->       │ mysql      │
+ │ Web EC2    │                    │ WAS EC2    │
+ │ nginx      │     -(SSH)->       │ FastAPI    │
  └────────────┘                    └────────────┘
                                           │
                                     ┌────────────┐
-                                    │ WAS EC2    │
-                                    │ FastAPI    │
+                                    │ DB EC2     │
+                                    │ MySQL      │
                                     └────────────┘
                                           
 ```  
