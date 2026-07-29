@@ -51,6 +51,32 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
+####################################
+# NAT Gateway 작업
+####################################
+# 1. eip
+resource "aws_eip" "DE-AI-07-COMPANY-nat-eip" {
+  domain = "vpc"
+  tags = {
+    Name = "DE-AI-07-COMPANY-nat-eip"
+  }
+}
+
+# 2. NAT Gatewawy
+resource "aws_nat_gateway" "company_nat_gw" {
+  # EIP 할당
+  allocation_id = aws_eip.DE-AI-07-COMPANY-nat-eip.id
+  # public 서브넷에 생성
+  subnet_id = aws_subnet.public.id
+  tags = {
+    Name = "DE-AI-07-COMPANY-nat-gw"
+  }
+  # 명시적 의존성 표기 - IGW 선행 생성 후 진행
+  depends_on = [
+    aws_internet_gateway.company
+  ]
+}
+
 # private 서브넷 
 resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.DE-AI-07-COMPANY.id
@@ -61,11 +87,16 @@ resource "aws_subnet" "private" {
   }
 }
 
-# 라우트 테이블
+# 3. 라우트 테이블에 라우트 설정 (nat와 연결)
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.DE-AI-07-COMPANY.id
   tags = {
     Name = "DE-AI-07-COMPANY-private-rt"
+  }
+  # private에서 나가는 트래픽은 NAT Gateway로 전달
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.company_nat_gw.id
   }
 }
 
