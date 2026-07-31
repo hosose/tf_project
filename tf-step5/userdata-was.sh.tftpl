@@ -61,7 +61,7 @@ DOCKER
 # 애플리케이션 디렉터리로 이동
 cd /opt/app
 # 현재 디렉터리의 Dockerfile을 이용해 이미지를 생성
-docker build -t de-ai-25-was:v2 .
+docker build -t de-ai-07-was:v2 .
 
 # 컨테이너를 백그라운드로 실행
 docker run -d \
@@ -72,7 +72,7 @@ docker run -d \
   -e DB_PORT="${db_port}" \
   -e DB_NAME="${db_name}" \
   -e DB_USER="${db_user}" \
-  de-ai-25-was:v2
+  de-ai-07-was:v2
 
 # EC2 운영체제 시간대를 한국 표준시로 변경합
 timedatectl set-timezone Asia/Seoul
