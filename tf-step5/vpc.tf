@@ -1,15 +1,20 @@
 # Vpc
-resource "aws_vpc" "company_vpc" {
-  # 65536개 IP
+resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
   tags = {
-    Name = "DE-AI-07-COMPANY"
+    Name = "${local.project}-VPC"
   }
 }
 
 # Intervet Gateway
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "${local.project}-IGW"
+  }
+}
 
 # Public Subnets - Public ALB, NAT Gateway
 
