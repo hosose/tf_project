@@ -98,10 +98,10 @@ tf-step5/
 L [*]variables.tf : tf 전체에 사용한 값 정의 (상수같이 활용)
 L [*]locals.tf    : 신규, 반복용 값 세팅
 L [*]iam.tf       : 신규, SSM 처리 역활, 프로파일 구성, 접속관련
-L provider.tf  : 공급자 정보, 리전, 공용 태그(전체 리소스 영향)
+L [*]provider.tf  : 공급자 정보, 리전, 공용 태그(전체 리소스 영향)
 
-L vpc.tf       : vpc, subnet, igw, nat gateway, route table/az 연결/alb, web/was, db 연결 
-L sg.tf        : 보안 그룹 -> ALB, WEB, Interal ALB, WAS, DB
+L [*]vpc.tf       : vpc, subnet, igw, nat gateway, route table/az 연결/alb, web/was, db 연결 
+L sg.tf        : 수정 보안 그룹 -> ALB, WEB, Interal ALB, WAS, DB
 L alb.tf       : 신규 로그밸런서 구성, 작동방식
 L asg.tf       : 신규 오토 스케일링 그룹 전략, 장애 발생시 대응, 내용 업그레이드시 교체 전략, 증감 조건 (CPU 50% 기준(예시)) 정책
 
