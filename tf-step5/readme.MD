@@ -48,3 +48,65 @@ Prometheus -> Grafana -> Metrics -> Alert (슬랙등..)
     - 운영형 아킥텍쳐        
     - 쿠버네티스로 자연스럽게 확장 연동 대체 가능한 구조
         - 각 파트별 대체 가능
+
+# 구성도
+- 트래픽 이동(api 요청, 웹페이지 요청, request)
+```
+Internet (외부망, 퍼블릭, 인터넷)
+   │
+Public ALB (EIP, 도메인, 퍼블릿 서브넷)
+   │
+WEB Auto Scaling Group (ASG, 최소 2개 구성, 확장성 조건 명시, 최대 n개)
+├─ WEB EC2 / AZ-a (가용영역-a -> 서브넷 a존)
+└─ WEB EC2 / AZ-c (가용영역-c -> 서브넷 c존)
+   │
+Internal ALB (프라이빗 서브넷, web<->was, 로드밸런싱)
+   │
+WAS Auto Scaling Group
+├─ WAS EC2 / AZ-a
+└─ WAS EC2 / AZ-c
+   │
+RDS MySQL Multi-AZ (고가용성, db 용량이 부족 -> 자동증가 설정-> AWS RDS 자동 처리, 활성화 하면 적용)
+├─ Primary
+└─ Standby
+```
+
+- 용어정리
+    - Region : 서울 -> 서비스 지역
+        L Availability Zone(AZ) : 리전 내부에 독립된 데이터센터 영역 (서울내 4개 독릭영역(a,b,c,d))
+            L Subnet : 독립 가용영역 안에 생성하는 네트워크 (설정한 만큼 생성 가능)
+
+- 네트워크 구조 (2개의 가용 영역, 각각 서브넷 구성(퍼블릭 1개, 프라이빗 2개))
+```
+ap-northeast-2a               ap-northeast-2c
+───────────────────────────────────────────────
+Public-A                       Public-C
+├─ Public ALB                  ├─ Public ALB
+└─ NAT Gateway-A               └─ NAT Gateway-C
+
+App-Private-A                  App-Private-C
+├─ WEB ASG                     ├─ WEB ASG
+├─ Internal ALB                ├─ Internal ALB
+└─ WAS ASG                     └─ WAS ASG
+
+DB-Private-A                   DB-Private-C
+└─ RDS Primary/Standby         └─ RDS Primary/Standby
+```
+
+# 파일구조
+tf-step5/
+L variables.tf : tf 전체에 사용한 값 정의 (상수같이 활용)
+L locals.tf    : 신규, 반복용 값 세팅
+L iam.tf       : 신규, SSM 처리 역활, 프로파일 구성, 접속관련
+L provider.tf  : 공급자 정보, 리전, 공용 태그(전체 리소스 영향)
+
+L vpc.tf       : vpc, subnet, igw, nat gateway, route table/az 연결/alb, web/was, db 연결 
+L sg.tf        : 보안 그룹 -> ALB, WEB, Interal ALB, WAS, DB
+L alb.tf       : 신규 로그밸런서 구성, 작동방식
+L asg.tf       : 신규 오토 스케일링 그룹 전략, 장애 발생시 대응, 내용 업그레이드시 교체 전략, 증감 조건 (CPU 50% 기준(예시)) 정책
+
+L data.tf      : 리소스 조회, AMI
+L launch_template.tf : 신규
+L rds.tf       : 신규 rds 구성
+L userdata-web.sh.tftpl : 테라폼 템플릿 파일, web ec2 구성시 초기해 세팅해야할 내용 쉘스크립트 구성등 내용 포함
+L userdata-was.sh.tftpl : 테라폼 템플릿 파일, was ec2 구성시 초기해 세팅해야할 내용 쉘스크립트 구성등 내용 포함
