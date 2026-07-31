@@ -17,7 +17,22 @@ resource "aws_internet_gateway" "main" {
 }
 
 # Public Subnets - Public ALB, NAT Gateway
+resource "aws_subnet" "public" {
+  #반복데이터 세팅 (cidr)
+  for_each = local.public_subnets
 
+  vpc_id     = aws_vpc.main.id
+  cidr_block = each.value
+  # 키 값이 a면 a에 맞는 값들로 구성, c도 동일함
+  availability_zone = local.azs[each.key]
+
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "${local.project}-PUBLIC-${upper(each.key)}"
+    # 커스텀 태그
+    Tier = "public"
+  }
+}
 # Private Application Subnets - WEB, WAS internal ALB
 
 # Private Database Subnets - RDS
