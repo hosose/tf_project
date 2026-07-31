@@ -47,7 +47,7 @@ resource "aws_lb_listener" "public_http" {
 # internal ALB : WEB ASG <-> Internal ALB <-> WAS ASG
 #################################
 resource "aws_lb" "internal" {
-  name               = "${local.project}-internal-alb"
+  name               = "${local.project}-In-alb"
   internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.internal_alb.id]
