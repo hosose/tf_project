@@ -34,8 +34,40 @@ resource "aws_subnet" "public" {
   }
 }
 # Private Application Subnets - WEB, WAS internal ALB
+resource "aws_subnet" "app" {
+  #반복데이터 세팅 (cidr)
+  for_each = local.app_subnets
+
+  vpc_id     = aws_vpc.main.id
+  cidr_block = each.value
+  # 키 값이 a면 a에 맞는 값들로 구성, c도 동일함
+  availability_zone = local.azs[each.key]
+
+  map_public_ip_on_launch = false
+  tags = {
+    Name = "${local.project}-APP-${upper(each.key)}"
+    # 커스텀 태그
+    Tier = "application"
+  }
+}
 
 # Private Database Subnets - RDS
+resource "aws_subnet" "db" {
+  #반복데이터 세팅 (cidr)
+  for_each = local.db_subnets
+
+  vpc_id     = aws_vpc.main.id
+  cidr_block = each.value
+  # 키 값이 a면 a에 맞는 값들로 구성, c도 동일함
+  availability_zone = local.azs[each.key]
+
+  map_public_ip_on_launch = false
+  tags = {
+    Name = "${local.project}-DB-${upper(each.key)}"
+    # 커스텀 태그
+    Tier = "database"
+  }
+}
 
 # Public Route Table/Association
 
