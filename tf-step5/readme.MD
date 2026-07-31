@@ -110,3 +110,4 @@ L launch_template.tf : 신규
 L rds.tf       : 신규 rds 구성
 L userdata-web.sh.tftpl : 테라폼 템플릿 파일, web ec2 구성시 초기해 세팅해야할 내용 쉘스크립트 구성등 내용 포함
 L userdata-was.sh.tftpl : 테라폼 템플릿 파일, was ec2 구성시 초기해 세팅해야할 내용 쉘스크립트 구성등 내용 포함
+
