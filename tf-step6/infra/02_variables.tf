@@ -19,7 +19,9 @@ variable "environment" {
 
 
 
-
+# ────────────────────────────────────────────────
+# VPC, 서브넷(2개), AZ, CIDR <- 네트워크 관련 변수
+# ────────────────────────────────────────────────
 variable "vpc_cidr" {
   description = "VPC CIDR"
   type        = string
