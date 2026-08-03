@@ -31,25 +31,27 @@ resource "aws_subnet" "public" {
     # 쿠버네티스 관련
     # 쿠버네티스가 외부용 로드밸런서 서브넷으로 식별할 수 있도록 태그 구성
     # EKS Auto Mode 구성시 인터넷 접근이 가능한 로드밸런서 구성할 때 해당 서브넷 사용해도 좋다 라는 표식
+
+    # 작동
     # EKS는 아래 태그 값을 가진 서브넷을 찾아서 인터넷 공개용 ALB등을 배치
     "kubernetes.io/role/elb" = "1"
   }
 }
-# Private Application Subnets - WEB, WAS internal ALB
+
+
+# Private Application Subnets - EKS Auto Mode 의 Nods/pod 등 배치
+# 쿠버네티스가 해당 서브넷을 내부 적용 ALB등을 만들 때 해당 서브넷 사용하도록 하는 태그 표식 추가
 resource "aws_subnet" "app" {
   #반복데이터 세팅 (cidr)
   for_each = local.app_subnets
 
-  vpc_id     = aws_vpc.main.id
-  cidr_block = each.value
-  # 키 값이 a면 a에 맞는 값들로 구성, c도 동일함
-  availability_zone = local.azs[each.key]
-
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = each.value.cidr
+  availability_zone       = each.value.az
   map_public_ip_on_launch = false
   tags = {
-    Name = "${local.project}-APP-${upper(each.key)}"
-    # 커스텀 태그
-    Tier = upper("application")
+    Name                              = "${local.cluster_name}-app-${lower(each.key)}"
+    "kubernetes.io/role/internal-elb" = "1"
   }
 }
 
@@ -58,16 +60,14 @@ resource "aws_subnet" "db" {
   #반복데이터 세팅 (cidr)
   for_each = local.db_subnets
 
-  vpc_id     = aws_vpc.main.id
-  cidr_block = each.value
-  # 키 값이 a면 a에 맞는 값들로 구성, c도 동일함
-  availability_zone = local.azs[each.key]
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value.cidr
+  availability_zone = each.value.az
 
   map_public_ip_on_launch = false
   tags = {
-    Name = "${local.project}-DB-${upper(each.key)}"
-    # 커스텀 태그
-    Tier = upper("database")
+    Name                              = "${local.cluster_name}-db-${lower(each.key)}"
+    "kubernetes.io/role/internal-elb" = "1"
   }
 }
 
