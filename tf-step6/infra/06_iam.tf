@@ -1,8 +1,8 @@
 # ────────────────────────────────────────────────
 # EKS Cluster Role 생성
 # Auto Mode에서 컴퓨팅, 네트워킹, LB, 스토리지등 관리할 권한 부여
-# 특정 서비스의 정책 -> 특정 역활에 부여 -> 해당 역활을 특정 사용자에게 부여 -> 특정 사용자는
-# 특정 서비스의 관리/조작/등 행위(액션)을 수행수 잇다 => EKS에 관련된 정책->역활->사용자에게반영
+# 특정 서비스의 정책 -> 특정 역할에 부여 -> 해당 역할을 특정 사용자에게 부여 -> 특정 사용자는
+# 특정 서비스의 관리/조작/등 행위(액션)을 수행수 잇다 => EKS에 관련된 정책->역할->사용자에게반영
 # ────────────────────────────────────────────────
 
 # ────────────────────────────────────────────────
@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "eks_cluster_assume" {
       "sts:AssumeRole",
       "sts:TagSession"
     ]
-    # EKS 서비스에서만 해당 역활을 사용할 수 있데 제한
+    # EKS 서비스에서만 해당 역할을 사용할 수 있데 제한
     principals {
       type        = "Service"
       identifiers = ["eks.amazonaws.com"]
@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "eks_cluster_assume" {
 resource "aws_iam_role" "eks_cluster" {
   # 특정 계정(구분용) 위한 롤 구성
   name = "${local.cluster_name}-cluster-role"
-  # 역활에 정책 => 위에서 구성한 내용 조회하여 반영
+  # 역할에 정책 => 위에서 구성한 내용 조회하여 반영
   assume_role_policy = data.aws_iam_policy_document.eks_cluster_assume.json
 }
 # ────────────────────────────────────────────────
@@ -57,12 +57,12 @@ resource "aws_iam_role_policy_attachment" "eks_cluster" {
   role       = aws_iam_role.eks_cluster.name
   policy_arn = each.value
 }
-# 결론 : aws_iam_role 역활 생성 완료 (EKS 서비스 관리를 위한 정책들 역활에 모두 부여함)
+# 결론 : aws_iam_role 역할 생성 완료 (EKS 서비스 관리를 위한 정책들 역할에 모두 부여함)
 
 
 # ────────────────────────────────────────────────
 # EKS Auto Mode Node Role 생성
-# 자동으로 생성되는 ec2 node가 EKS 참여, ECR pull에 사용되는 정책을 가진 역활
+# 자동으로 생성되는 ec2 node가 EKS 참여, ECR pull에 사용되는 정책을 가진 역할
 # ────────────────────────────────────────────────
 # ────────────────────────────────────────────────
 # 1. ec2 정책 획득

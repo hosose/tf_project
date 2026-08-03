@@ -53,7 +53,7 @@
                       Multi-AZ 구성
 ```
 
-# 개별 요소 역활
+# 개별 요소 역할
 - Control Plane : 마스터 노드
 - Data Plane : 워커 노드(Worker Node)
 
@@ -65,7 +65,7 @@
 |    | Scheduler     | Pod가 실행될 Node 결정 - 요청에 대한 처리 누가 할지 (노드 선택)  |
 |    | Controller    | 원하는 상태와 실제 상태 비교 - 차이가 있으면 반영  |
 |    | etcd          | 클러스터 선언·상태 저장  |
-| Auto Mode       | EKS 관리 기능                 | Node 생성·축소와 네트워크 자동화, 컨트롤 플레인 역활 담당 |
+| Auto Mode       | EKS 관리 기능                 | Node 생성·축소와 네트워크 자동화, 컨트롤 플레인 역할 담당 |
 | 클러스터 - Data Plane |  |  |
 | Cluster         | Amazon EKS                | Kubernetes 전체 환경, 1개 클러스터 내에서 namespace로 쿠버네티스 프로젝트당 리소스 논리적 격기      |
 |             | Ingress         | 외부 라우팅 규칙, Application Load Balancer         |
