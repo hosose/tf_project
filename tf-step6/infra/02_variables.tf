@@ -63,7 +63,7 @@ variable "kubernetes_version" {
   default = "1.35"
 }
 variable "cluster_endpoint_public_access_cidrs" {
-  description = "EKS Public API 접근 CIDR. 용도에 따라 제한할 수 있음"
+  description = "EKS Public API 접근 CIDR. 용도에 따라 제한할 수 있음. 실제는 개발자 IP등 한정"
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
