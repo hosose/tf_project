@@ -31,8 +31,6 @@ resource "aws_iam_role" "eks_cluster" {
   # 역활에 정책 => 위에서 구성한 내용 조회하여 반영
   assume_role_policy = data.aws_iam_policy_document.eks_cluster_assume.json
 }
-
-
 # ────────────────────────────────────────────────
 # 3. EKS Cluster aws 관리형 정책 획득 -> 고정값 사전 상수로 나열 -> locals
 #    컴퓨팅, 클러스터, 블록스토리지, 로드밸런스, 네트워킹 정책 -> 나열
@@ -50,7 +48,7 @@ locals {
   }
 }
 # ────────────────────────────────────────────────
-# 4. EKS 관리형 정책을 반영할 Role 생성
+# 4. EKS 관리형 정책을 반영할 Role에 정책 부여
 # ────────────────────────────────────────────────
 resource "aws_iam_role_policy_attachment" "eks_cluster" {
   for_each = local.eks_auto_cluster_policies
@@ -62,6 +60,13 @@ resource "aws_iam_role_policy_attachment" "eks_cluster" {
 # 결론 : aws_iam_role 역활 생성 완료 (EKS 서비스 관리를 위한 정책들 역활에 모두 부여함)
 
 
+# ────────────────────────────────────────────────
+# EKS Auto Mode Node Role 생성
+# 자동으로 생성되는 ec2 node가 EKS 참여, ECR pull에 사용되는 정책을 가진 역활
+# ────────────────────────────────────────────────
+# ────────────────────────────────────────────────
+# 1. ec2 정책 획득
+# ────────────────────────────────────────────────
 data "aws_iam_policy_document" "eks_auto_node_assume" {
   statement {
     effect  = "Allow"
@@ -73,19 +78,25 @@ data "aws_iam_policy_document" "eks_auto_node_assume" {
     }
   }
 }
-
+# ────────────────────────────────────────────────
+# 2. EKS Auto Mode `Node Role` 생성
+# ────────────────────────────────────────────────
 resource "aws_iam_role" "eks_auto_node" {
   name               = "${local.cluster_name}-auto-node-role"
   assume_role_policy = data.aws_iam_policy_document.eks_auto_node_assume.json
 }
-
+# ────────────────────────────────────────────────
+# 3. 워커 노드 정책, ECR PULL 정책 명시적 나열
+# ────────────────────────────────────────────────
 locals {
   eks_auto_node_policies = {
     worker = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodeMinimalPolicy"
     ecr    = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
   }
 }
-
+# ────────────────────────────────────────────────
+# 4. 기본 ec2 정책 + 3번 사항의 2개 정책을 새로 생성한 Node Role에 추가
+# ────────────────────────────────────────────────
 resource "aws_iam_role_policy_attachment" "eks_auto_node" {
   for_each = local.eks_auto_node_policies
 

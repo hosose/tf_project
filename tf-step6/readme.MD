@@ -145,7 +145,10 @@
 ```
 
 5. [v]`05_vpc.tf` — VPC, 6개 Subnet, IGW, NAT Gateway, Route Table
-6. `06_iam.tf` — EKS Cluster Role과 Auto Mode Node Role
+6. [v]`06_iam.tf` — EKS Cluster Role과 Auto Mode Node Role
+```
+- 삭제시 해당 role이 삭제 안되면 -> 자동화 구성시 오류 발생함(중복 역할 생성)
+```
 7. `07_logging.tf` — EKS Control Plane CloudWatch Log Group
 
 8. `08_eks.tf` — EKS Control Plane, Auto Mode, Metrics Server, Access Entry
