@@ -51,25 +51,38 @@ variable "db_subnet_cidrs" {
   default     = ["10.0.21.0/24", "10.0.22.0/24"]
 }
 
-variable "instance_type" {
-  description = "WEB/WAS EC 인스턴스 유형"
+# ────────────────────────────────────────────────
+# EKS 설정 관련 변수
+# ────────────────────────────────────────────────
+variable "kubernetes_version" {
+  description = "EKS Kuberbnetes 버전"
   type        = string
-  default     = "t3.micro"
+  # 보수적으로 최신버전 바로 하위 버전 사용(현재 사용 컨셉상 최신 버전 문제 없음)
+  default = "1.35"
 }
-variable "web_desired_capacity" {
-  description = "WEB ASG 기본 인스턴스 수"
-  type        = number
-  default     = 2
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "EKS Public API 접근 CIDR. 용도에 따라 제한할 수 있음"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
 }
-variable "was_desired_capacity" {
-  description = "WAS ASG 기본 인스턴스 수"
-  type        = number
-  default     = 2
+variable "addtional_admin_role_arns" {
+  description = "EKS 추가 관리자 IAM ROLE ARN 목록"
+  type        = set(string)
+  default     = []
 }
+
+# ────────────────────────────────────────────────
+# RDS 설정 관련 변수
+# ────────────────────────────────────────────────
 variable "db_instance_class" {
   description = "DB 인스턴스 클레스"
   type        = string
   default     = "db.t3.micro"
+}
+variable "db_allocated_storage" {
+  description = "RDS 초기 스토리지 용량(GB)"
+  type        = number
+  default     = 20
 }
 variable "db_name" {
   description = "초기 생성 데이터베이스 이름"
