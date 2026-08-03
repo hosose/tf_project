@@ -40,5 +40,6 @@ locals {
     Project     = var.project_name
     Environment = var.environment
     ManageBy    = "Terraform"
-    Version    
+    Version     = "v2-eks-auto"
+  }
 }
