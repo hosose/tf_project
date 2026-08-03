@@ -1,4 +1,7 @@
 # 전체 EKS/RDS 서비스가 들어갈 네트워크 구성
+# ────────────────────────────────────────────────
+# VPC
+# ────────────────────────────────────────────────
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -8,6 +11,9 @@ resource "aws_vpc" "main" {
   }
 }
 
+# ────────────────────────────────────────────────
+# IGW
+# ────────────────────────────────────────────────
 # Intervet Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
@@ -16,6 +22,9 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
+# ────────────────────────────────────────────────
+# subnet
+# ────────────────────────────────────────────────
 # Public Subnets - Public ALB, NAT Gateway
 resource "aws_subnet" "public" {
   #반복데이터 세팅 (cidr)
@@ -71,6 +80,9 @@ resource "aws_subnet" "db" {
   }
 }
 
+# ────────────────────────────────────────────────
+# NAT
+# ────────────────────────────────────────────────
 # AZ별 NAT Gateway에 연결할 고정 공인 - eip
 resource "aws_eip" "nat" {
   for_each = aws_subnet.public
@@ -95,43 +107,15 @@ resource "aws_nat_gateway" "nat" {
   ]
 }
 
-# Private App Route Table/association
-resource "aws_route_table" "app" {
-  for_each = local.azs
-  vpc_id   = aws_vpc.main.id
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.nat[each.key].id
-  }
-  tags = {
-    Name = "${local.project}-APP-RT"
-  }
-}
-resource "aws_route_table_association" "app" {
-  for_each       = aws_subnet.app
-  subnet_id      = each.value.id
-  route_table_id = aws_route_table.app[each.key].id
-}
-# Private Db Route Table/association
-# RDS 서비스 사용 -> 기존 EC2 기반 NAT 구성과 상이함
-resource "aws_route_table" "db" {
-  vpc_id = aws_vpc.main.id
-  tags = {
-    Name = "${local.project}-DB-RT"
-  }
-}
-resource "aws_route_table_association" "db" {
-  for_each       = aws_subnet.db
-  subnet_id      = each.value.id
-  route_table_id = aws_route_table.db.id
-}
-
+# ────────────────────────────────────────────────
+# Route Table/Association
+# ────────────────────────────────────────────────
 
 # Public Route Table/Association
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "${local.project}-PUBLIC-RT"
+    Name = "${local.cluster_name}-public-rt"
   }
   route {
     cidr_block = "0.0.0.0/0"
@@ -144,3 +128,39 @@ resource "aws_route_table_association" "public" {
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public.id
 }
+
+# Private App Route Table/association
+resource "aws_route_table" "app" {
+  #반복데이터 세팅 (cidr)
+  for_each = aws_subnet.app
+  vpc_id   = aws_vpc.main.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.nat[each.key].id
+  }
+  tags = {
+    Name = "${local.cluster_name}-app-rt-${each.key}"
+  }
+}
+resource "aws_route_table_association" "app" {
+  for_each       = aws_subnet.app
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.app[each.key].id
+}
+
+# Private Db Route Table/association
+# RDS 서비스 사용 -> 기존 EC2 기반 NAT 구성과 상이함
+resource "aws_route_table" "db" {
+  for_each = aws_subnet.db
+  vpc_id   = aws_vpc.main.id
+
+  tags = {
+    Name = "${local.cluster_name}-db-rt-${each.key}"
+  }
+}
+resource "aws_route_table_association" "db" {
+  for_each       = aws_subnet.db
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.db.id
+}
+
