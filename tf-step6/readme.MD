@@ -152,3 +152,7 @@
     - Dockfile : 이미지 생성용 도커파일
     - index.html : 홈페이지(/) 프런트코드(html, css, js)
     - nginx.conf : 프록시 구성 환경설정 파일 (web->was, 기타설정)
+- was
+    - app.py : fastapi 작성된 백엔드 코드
+    - Dockerfile : 이미지 생성용 도커파일
+    - requirements.txt : 필수 패키지
