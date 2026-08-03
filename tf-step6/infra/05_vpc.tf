@@ -71,39 +71,24 @@ resource "aws_subnet" "db" {
   }
 }
 
-# Public Route Table/Association
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
-  tags = {
-    Name = "${local.project}-PUBLIC-RT"
-  }
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
-  }
-}
-
-resource "aws_route_table_association" "public" {
-  for_each       = aws_subnet.public
-  subnet_id      = each.value.id
-  route_table_id = aws_route_table.public.id
-}
-
-# NAT Gateway - eip
+# AZ별 NAT Gateway에 연결할 고정 공인 - eip
 resource "aws_eip" "nat" {
-  for_each = local.azs
+  for_each = aws_subnet.public
   domain   = "vpc"
   tags = {
-    Name = "${local.project}-NAT-EIP-${upper(each.key)}"
+    Name = "${local.cluster_name}-nat-eip-${lower(each.key)}"
   }
+
+  # 의존성 명시적 - igw가 반드시 구성되어 있어야 한다.
+  depends_on = [aws_internet_gateway.main]
 }
 
 resource "aws_nat_gateway" "nat" {
-  for_each      = local.azs
-  allocation_id = aws_eip.nat[each.key].id       # ..nat['A']..., ..nat['C']... -> 가용영역별로 생성
-  subnet_id     = aws_subnet.public[each.key].id # public 서브넷에 생성 -> public 서브넷의 cidr를 사용
+  for_each      = aws_subnet.public
+  allocation_id = aws_eip.nat[each.key].id # IP를 가용영역별로 세팅
+  subnet_id     = each.value.id            # 가용영역별 퍼블릿 서브넷
   tags = {
-    Name = "${local.project}-NAT-GW-${upper(each.key)}"
+    Name = "${local.cluster_name}-nat-${lower(each.key)}"
   }
   depends_on = [
     aws_internet_gateway.main
@@ -139,4 +124,23 @@ resource "aws_route_table_association" "db" {
   for_each       = aws_subnet.db
   subnet_id      = each.value.id
   route_table_id = aws_route_table.db.id
+}
+
+
+# Public Route Table/Association
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "${local.project}-PUBLIC-RT"
+  }
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+}
+
+resource "aws_route_table_association" "public" {
+  for_each       = aws_subnet.public
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public.id
 }
