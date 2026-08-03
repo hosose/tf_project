@@ -121,3 +121,36 @@ L userdata-was.sh.tftpl : 테라폼 템플릿 파일, was ec2 구성시 초기�
     - 3. AWS 관리형 정책 연결
     - 4. EC2에 적용하는 IAM 인스턴스 프로필 생성
     - 단, 생성되는 EC2에는 SSM Agent가 설치되어 있어야함 (최신형을 통상 설치되어 있음)
+
+# 트레블 슈팅
+## SSM Role 관련
+```
+Error: creating IAM Role (DE-AI-25-IaC-3tier-V1-EC2-SSM-Role): operation error IAM: CreateRole, https response error StatusCode: 409, RequestID: 099822ce-3507-4be7-b7d2-5be76d86b8cc, EntityAlreadyExists: Role with name DE-AI-25-IaC-3tier-V1-EC2-SSM-Role already exists. <= 이미 존재
+---
+- AWS > 우측 하단 > cloudshell 작동
+    - 분리 작업
+    aws iam remove-role-from-instance-profile --instance-profile-name [프로파일이름] --role-name [역할이름]
+    - 프로필 삭제 
+    aws iam delete-instance-profile --instance-profile-name [프로파일이름]
+    - iAM > 역활 > 해당 역활 삭제
+```
+
+# 인프라 구성 완료후 
+```
+internal_alb_dns = "internal-DE-AI-25-IaC-3tier-V1-In-alb-1131590988.ap-northeast-2.elb.amazonaws.com"
+public_alb_dns = "DE-AI-25-IaC-3tier-V1-public-alb-1745651178.ap-northeast-2.elb.amazonaws.com"
+public_alb_url = "http://DE-AI-25-IaC-3tier-V1-public-alb-1745651178.ap-northeast-2.elb.amazonaws.com"  <- 주소 카피 후 브라우저에 접속 응답값 복사 백업등 3회 정도 반복
+rds_endpoint = "de-ai-25-mysql-v1.ct460c8gc44s.ap-northeast-2.rds.amazonaws.com:3306"
+rds_master_secret_arn = "arn:aws:secretsmanager:ap-northeast-2:827913617635:secret:rds!db-cdb6f01e-bad6-4493-b490-2d7b8c94a83b-8Hk8wD"
+was_asg_name = "DE-AI-25-IaC-3tier-V1-WAS-ASG"
+web_asg_name = "DE-AI-25-IaC-3tier-V1-WEB-ASG"
+```
+```
+- 요청후 응답 화면
+- 1회차 요청
+{"message":"3-Tier v2 response","hostname":"783c2a1d237c","db_host":"de-ai-25-mysql-v1.ct460c8gc44s.ap-northeast-2.rds.amazonaws.com","db_name":"appdb"}
+
+- 3회차 요청
+{"message":"3-Tier v2 response","hostname":"5fea1268bdd2","db_host":"de-ai-25-mysql-v1.ct460c8gc44s.ap-northeast-2.rds.amazonaws.com","db_name":"appdb"}
+
+```
