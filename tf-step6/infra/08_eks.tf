@@ -62,7 +62,7 @@ resource "aws_eks_cluster" "main" {
   # EKS가 사용하는 VPC, API endpoing  설정
   vpc_config {
     # private 서브넷에 배치
-    subnet_ids = value(aws_subnet.app)[*].id # 가용영역별 존재하는 서브넷 모두세팅(ids)
+    subnet_ids = values(aws_subnet.app)[*].id # 가용영역별 존재하는 서브넷 모두세팅(ids)
     # VPC 내부에서 private eks api 엔드포인트 접속 허용
     endpoint_private_access = true
     # 로컬 PC에서 public eks api 엔드포인트 접근 허용 (cli등으로 접근)
@@ -152,7 +152,8 @@ resource "aws_eks_access_policy_association" "admin" {
   principal_arn = each.value
 
   # 실제 관리자 정책 => AWS에서 사전에 확정한 정책 => arn 방식 표기
-  policy_arn = "arn:aws:eks:aws::cluster-access-policy//AmazonEKSClusterAdminPolicy"
+  policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
 
   # 접근 범위
   access_scope {
