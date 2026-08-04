@@ -67,7 +67,7 @@ variable "cluster_endpoint_public_access_cidrs" {
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
-variable "addtional_admin_role_arns" {
+variable "additional_admin_role_arns" {
   description = "EKS 추가 관리자 IAM ROLE ARN 목록"
   type        = set(string)
   default     = []

@@ -156,7 +156,7 @@
 10. [v]`10_ecr.tf` — WEB/WAS 이미지 저장소와 이미지 정리 정책
 11. [v]`11_rds.tf` — 비공개 MySQL Multi-AZ 및 Secrets Manager 암호
 
-12. `12_outputs.tf` — 배포 스크립트가 사용할 생성 결과
+12. [v]`12_outputs.tf` — 배포 스크립트가 사용할 생성 결과
 
 ## ~/k8s 쿠버네티스 구성 파일
 - app.yaml.tpl
