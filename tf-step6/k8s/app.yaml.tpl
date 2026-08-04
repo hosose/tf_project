@@ -237,6 +237,15 @@ kind: Ingress
 metadata:
   name: public-alb
   namespace: ${APP_NAMESPACE}
+  annotations:
+      # 1. 인터넷 공개형 ALB 설정
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      
+      # 2. EKS Auto Mode / IP 기반 Target Group 생성 (필수)
+      alb.ingress.kubernetes.io/target-type: ip
+      
+      # 3. HTTP 80 포트 리스너 지정
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
 spec:
   ingressClassName: alb
   rules:

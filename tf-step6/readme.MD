@@ -179,3 +179,41 @@
 - app.yaml.tpl
     - 인프라 구성후 참조할 리소스값등을 구성 파일에 전달하기 위해 템플릿 형태로 구성
     - ${변수명} 표기법을 Manifest 파일 곳곳에 세팅하여, 배포 시점에 Python 스크립트(render_manifest.py)나 envsubst 등으로 실제 값(ECR 주소, 네임스페이스 등)을 동적으로 주입/치환하여 적용합니다.
+
+```
+오류 발생
+사이트에 연결할 수 없음
+
+k8s-deai07-publical-db3d79d7f3-1177408667.us-east-2.elb.amazonaws.com에서 응답하는 데 시간이 너무 오래 걸립니다.다음 방법을 시도해 보세요.
+
+연결 확인
+
+프록시 및 방화벽 확인
+
+Windows 네트워크 진단 프로그램 실행
+
+ERR_CONNECTION_TIMED_OUT 
+
+app.yaml.tpl 파일에 해당 내용 추가해야함
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: public-alb
+  namespace: ${APP_NAMESPACE}
+# 새로 추가할 내용
+    annotations:
+        # metadata 하위 요소로 들여쓰기 4칸 적용!
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+
+추가 후 명령어 실행
+# 1. 기존 Ingress 삭제 (AWS ALB 삭제됨)
+kubectl delete ingress public-alb -n de-ai-07
+
+# 2. 10~20초 기다린 후 Ingress 다시 생성
+.\apply-all.bat
+
+# 3. 새로운 Ingress ADDRESS 확인
+kubectl get ingress public-alb -n de-ai-07 -w
+```

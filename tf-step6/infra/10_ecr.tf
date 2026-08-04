@@ -70,8 +70,8 @@ resource "aws_ecr_lifecycle_policy" "main" {
           # 기준
           "countNumber" : 10,
           # 저장된 이미지 개수가 기준을 초과하면 오래된 이미지를 제외 -> 최신순 
-          "countType" : "imageCountMoreThan",
-          "tagPrefixList" : [],
+          "countType" : "imageCountMoreThan"
+          # "tagPrefixList" : [],
         },
         # 액션 : 만료 처리
         "action" : {
