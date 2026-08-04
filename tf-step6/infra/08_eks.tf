@@ -99,9 +99,27 @@ resource "aws_eks_cluster" "main" {
 # ────────────────────────────────────────────────
 # Metrics Server addon 구성 (CPU 사용량등 => pod증감등 관련 지표 )
 # ────────────────────────────────────────────────
-# resource "aws_eks_addon" "metrics_server" {
-
-# }
+# Node, Pod의 현재 CPU, Memory 사용량 수집
+# 목적
+# 모니터링 : 
+# > kubectl top nodes
+# > kubectl top pods
+# pod 확장 -> HPA는 CPU, Memory 사용량 고려(커스텀 정책(cpu 60% 초과하면 증설하시오)) 증량
+# pod 감소 -> ...
+# 장기 지표 저장 및 시각화 => 프로메테우스/그라파나 사용 (대시보드 구성) => 관제
+resource "aws_eks_addon" "metrics_server" {
+  # 매트릭 서버를 에드온할 대상 EKS 클러스터
+  cluster_name = aws_eks_cluster.main.name
+  # Add-on 이름
+  addon_name = "metrics-server"
+  # 이미 설정된 경우 -> 덮어쓰기로 구성
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+  # 태그
+  tags = {
+    Name = "${local.cluster_name}-metrics-server"
+  }
+}
 
 
 # ────────────────────────────────────────────────
