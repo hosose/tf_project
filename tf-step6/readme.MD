@@ -158,17 +158,24 @@
 
 12. [v]`12_outputs.tf` — 배포 스크립트가 사용할 생성 결과
 
-## ~/k8s 쿠버네티스 구성 파일
-- app.yaml.tpl
-    - 인프라 구성후 참조할 리소스값등을 구성 파일에 전달하기 위해 템플릿 형태로 구성
-    - ${변수명} 주요 표현 곳곳에 세
-
 ## ~/apps web, was 이미지 생성, 소스코드, Dockerfile -> ci/cd 영향받음
 - web
     - Dockfile : 이미지 생성용 도커파일
     - index.html : 홈페이지(/) 프런트코드(html, css, js)
+        - Ingress -> Web Service -> Web Pod -> WAS Service -> Web Pod 확인됨
+        - Ingress -> Web Service -> Web Pod -> WAS Service -> Web Pod -> RDS 확인
     - nginx.conf : 프록시 구성 환경설정 파일 (web->was, 기타설정)
+        - was에 대해 upstream 구성으로 정의, 8000번 포트등 설정
+        - /health : 즉시 응답 구성 ( web pod가 잘 작동 하고 있음을 보여주는 응답 )
+        - /api/   : was pod 방향으로 포워딩
+        - /       : index.html 응답
 - was
     - app.py : fastapi 작성된 백엔드 코드
     - Dockerfile : 이미지 생성용 도커파일
     - requirements.txt : 필수 패키지
+
+
+## ~/k8s 쿠버네티스 구성 파일
+- app.yaml.tpl
+    - 인프라 구성후 참조할 리소스값등을 구성 파일에 전달하기 위해 템플릿 형태로 구성
+    - ${변수명} 표기법을 Manifest 파일 곳곳에 세팅하여, 배포 시점에 Python 스크립트(render_manifest.py)나 envsubst 등으로 실제 값(ECR 주소, 네임스페이스 등)을 동적으로 주입/치환하여 적용합니다.
