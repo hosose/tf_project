@@ -140,6 +140,26 @@ resource "aws_eks_access_entry" "admin" {
   # 타입 : 일반 Iam 사용자, role에 부여
   type = "STANDARD"
 }
-# resource "aws_eks_access_policy_association" "admin" {
+# 엔트리에 등록된 Iam Role에 eks 클러스터 관리자 권한을 실제 할당
+resource "aws_eks_access_policy_association" "admin" {
+  # 대상자(role등) 반복 설정
+  for_each = var.addtional_admin_role_arns
 
-# }
+  # 권한을 적용할 eks 클러스터
+  cluster_name = aws_eks_cluster.main.name
+
+  # 접근할 role arn
+  principal_arn = each.value
+
+  # 실제 관리자 정책 => AWS에서 사전에 확정한 정책 => arn 방식 표기
+  policy_arn = "arn:aws:eks:aws::cluster-access-policy//AmazonEKSClusterAdminPolicy"
+
+  # 접근 범위
+  access_scope {
+    # 특정 네임스페이스가 아닌 전체 클러스터에 영향을 미침(전체 권한 적용)
+    type = "cluster"
+  }
+
+  # 의존성
+  depends_on = [aws_eks_access_entry.admin]
+}
