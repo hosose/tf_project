@@ -2,7 +2,7 @@
 # WEB ECR 저장소
 # ────────────────────────────────────────────────
 resource "aws_ecr_repository" "web" {
-  # 저장소 이름 "de-ai-25-eks-auto-dev/web"
+  # 저장소 이름 "de-ai-07-eks-auto-dev/web"
   name = "${local.cluster_name}/web"
 
   # 이미지 태그

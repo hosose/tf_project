@@ -6,7 +6,7 @@ import pymysql
 from fastapi import FastAPI, HTTPException
 
 # 2. FastAPI 객체 생성
-app = FastAPI(title="DE-AI-25 EKS Auto Mode WAS", version="1.0.0-auto")
+app = FastAPI(title="DE-AI-07 EKS Auto Mode WAS", version="1.0.0-auto")
 
 # 3. 일반 커스텀 함수
 def required_env(name: str) -> str:
