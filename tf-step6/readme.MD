@@ -151,9 +151,9 @@
 ```
 7. [v]`07_logging.tf` — EKS Control Plane CloudWatch Log Group
 
-8. `08_eks.tf` — EKS Control Plane, Auto Mode, Metrics Server, Access Entry
-9. `09_security.tf` — EKS Cluster Security Group에서 RDS 3306 접근 허용
-10. `10_ecr.tf` — WEB/WAS 이미지 저장소와 이미지 정리 정책
+8. [v]`08_eks.tf` — EKS Control Plane, Auto Mode, Metrics Server, Access Entry
+9. [v]`09_security.tf` — EKS Cluster Security Group에서 RDS 3306 접근 허용
+10. [v]`10_ecr.tf` — WEB/WAS 이미지 저장소와 이미지 정리 정책
 11. `11_rds.tf` — 비공개 MySQL Multi-AZ 및 Secrets Manager 암호
 
 12. `12_outputs.tf` — 배포 스크립트가 사용할 생성 결과
