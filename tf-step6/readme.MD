@@ -216,4 +216,8 @@ kubectl delete ingress public-alb -n de-ai-07
 
 # 3. 새로운 Ingress ADDRESS 확인
 kubectl get ingress public-alb -n de-ai-07 -w
+
+이게 다 거짓말이었다니
+
+내 환경에서 안 되었던 이유는 리전 차이가 아니라, 처음에 ALB가 사설(internal) 상태로 꼬인 채 AWS에 남아있었기 때문...
 ```
